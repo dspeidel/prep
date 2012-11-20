@@ -236,17 +236,17 @@ namespace prep.specs
       It should_be_able_to_find_all_movies_published_after_a_certain_year = () =>
       {
         // > 2004
-        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(new Range<int>().BeginInclusive(2004));
+        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(new Range<int>().BeginExclusive(2004));
 
         var results = sut.all_movies().all_items_matching(criteria);
-
+		   
         results.ShouldContainOnly(the_ring, shrek, theres_something_about_mary);
       };
 
       It should_be_able_to_find_all_movies_published_between_a_certain_range_of_years = () =>
       {
         //1982-2003 - inclusive
-        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(new Range<int>().BeginInclusive(1982).EndInclusive(2004));
+        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(new Range<int>().BeginInclusive(1982).EndInclusive(2003));
 
         var results = sut.all_movies().all_items_matching(criteria);
 
@@ -426,14 +426,14 @@ namespace prep.specs
 
 	internal class Range<T> :IContainValues<T> where T : IComparable<T>
 	{
-		//TODO: add support for no upper or lower bound.  maybe null object pattern
+		//TODO: null object pattern
 		public Range()
 		{}
 
 		private IComparable<T> _begin;
 		private IComparable<T> _end;
-		private bool _beginInclusive = true;
-		private bool _endInclusive = false;
+		private bool _beginInclusive;
+		private bool _endInclusive;
 
 		public Range<T> BeginInclusive(IComparable<T> begin)
 		{
@@ -463,7 +463,17 @@ namespace prep.specs
 
 		public bool contains(T item)
 		{
-			throw new NotImplementedException();
+			var start = _begin == null || (_beginInclusive
+			                               	? _begin.CompareTo(item) <= 0
+			                               	: _begin.CompareTo(item) < 0);
+
+			var end = _end == null || (_endInclusive
+			          	? _end.CompareTo(item) >= 0
+			          	: _end.CompareTo(item) > 0);
+			
+			return start && end;
 		}
 	}
+
+
 }
