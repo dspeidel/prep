@@ -8,6 +8,7 @@ using prep.collections;
 using prep.specs.utility;
 using prep.utility;
 using prep.utility.filtering;
+using prep.utility.ranges;
 
 /* The following set of Context/Specification pairs are in place to specify the functionality that you need to complete for the MovieLibrary class.
  * MovieLibrary is an collection of Movie. It exposes the ability to search,sort, and iterate over all of the movies that it contains.
@@ -235,7 +236,7 @@ namespace prep.specs
       It should_be_able_to_find_all_movies_published_after_a_certain_year = () =>
       {
         // > 2004
-        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(.....);
+        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(new Range<int>().BeginInclusive(2004));
 
         var results = sut.all_movies().all_items_matching(criteria);
 
@@ -245,7 +246,7 @@ namespace prep.specs
       It should_be_able_to_find_all_movies_published_between_a_certain_range_of_years = () =>
       {
         //1982-2003 - inclusive
-        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(...);
+        var criteria = Where<Movie>.has_an(x => x.date_published.Year).falls_in(new Range<int>().BeginInclusive(1982).EndInclusive(2004));
 
         var results = sut.all_movies().all_items_matching(criteria);
 
@@ -422,4 +423,47 @@ namespace prep.specs
       }
     }
   }
+
+	internal class Range<T> :IContainValues<T> where T : IComparable<T>
+	{
+		//TODO: add support for no upper or lower bound.  maybe null object pattern
+		public Range()
+		{}
+
+		private IComparable<T> _begin;
+		private IComparable<T> _end;
+		private bool _beginInclusive = true;
+		private bool _endInclusive = false;
+
+		public Range<T> BeginInclusive(IComparable<T> begin)
+		{
+			_begin = begin;
+			_beginInclusive = true;
+			return this;
+		}
+		public Range<T> EndInclusive(IComparable<T> end)
+		{
+			_end = end;
+			_endInclusive = true;
+			return this;
+		}
+
+		public Range<T> BeginExclusive(IComparable<T> begin)
+		{
+			_begin = begin;
+			_beginInclusive = false;
+			return this;
+		}
+		public Range<T> EndExclusive(IComparable<T> end)
+		{
+			_end = end;
+			_endInclusive = false;
+			return this;
+		}
+
+		public bool contains(T item)
+		{
+			throw new NotImplementedException();
+		}
+	}
 }
